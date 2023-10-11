@@ -6,6 +6,19 @@ from typing import Dict
 import os
 import csv
 from typing import Dict
+import numpy as np
+import tensorflow as tf
+from sklearn import metrics        
+from typing import Union, Dict
+
+def evaluate_predictions(predictions, ys) -> Dict[str, Union[np.ndarray, float]]:
+    p = tf.argmax(predictions, 1).numpy()    
+    return {
+        'CM': metrics.confusion_matrix(ys, p),
+        'MCC': metrics.matthews_corrcoef(ys, p),
+        'AUC': metrics.roc_auc_score(ys, p),
+        'ACC': metrics.accuracy_score(ys, p)        
+    } 
 
 def get_config_filepath(config_filepath: str) -> str:
     path = os.path.realpath(os.path.dirname(__file__))
