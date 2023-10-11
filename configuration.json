@@ -1,0 +1,22 @@
+{
+    "project_name": "cryptic-site-pred",
+    "data_directory": "data/",
+    "embeddings_directory": "data/embedding-files-mmcif-apo-esm",
+    "tuner_directory": "data/kt-dir",
+    "model_directory": "results-apo-esm",
+    "test_annotations_path": "data/annotations_TEST.csv",
+    "train_annotations_path": "data/annotations_TRAIN.csv",
+    "hypermodel": {
+        "neuron_size_min": 32,
+        "neuron_size_max": 512,
+        "neuron_size_step": 32,
+        "number_of_layers_min": 1,
+        "number_of_layers_max": 3,
+        "number_of_layers_step": 1,
+        "dropout_min": 0.3,
+        "dropout_max": 0.7,
+        "dropout_step": 0.1,
+        "learning_rate": [1e-2, 1e-3, 1e-4],
+        "batch_size": [16,32,64,96]
+    }
+}
