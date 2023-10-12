@@ -3,6 +3,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_addons as tfa
 from helper import get_json_config
+import tensorflow as tf
 
 class ApoloHyperModel(kt.HyperModel):
     
@@ -28,11 +29,12 @@ class ApoloHyperModel(kt.HyperModel):
         output_layer = layers.Dense(2, activation="softmax")(x)
             
         model = keras.Model(inputs=inputs, outputs=output_layer)
-            
+        auc = tf.keras.metrics.AUC()
+        
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp.Choice('learning_rate', values=self.config.hypermodel.learning_rate)),
             loss=keras.losses.CategoricalCrossentropy(from_logits=False),
-            metrics=[tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2), keras.metrics.CategoricalAccuracy()]
+            metrics=[tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2), keras.metrics.CategoricalAccuracy(), auc]
             )            
             
         return model

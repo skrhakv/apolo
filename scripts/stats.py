@@ -26,7 +26,7 @@ def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
 
         y = [0]*seq_len
         for ix in sequence.annotations:
-            y[ix-1] = 1
+            y[ix - 1] = 1
 
         X = X.astype("float32")
         y = np.array(y).astype("float32")
