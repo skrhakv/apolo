@@ -11,9 +11,15 @@ class Sequence:
         self.embedding: np.ndarray = embedding
         self.annotations: List[int] = []
     
-    def add_annotations(self, pocket_def):
-        # pocket_def: D4 D48 V115 T116 N118 V120 G121 V122
-        self.annotations = [int(res[1:]) for res in pocket_def.split(' ')]
+    def add_annotations(self, annotations):
+        # annotations: D4 D48 V115 T116 N118 V120 G121 V122
+        self.annotations = [int(res[1:]) for res in annotations.split(' ')]
+        for annotation in annotations.split(' '):
+            aminoacid = annotation[:1]
+            label_seq_id = int(annotation[1:])
+
+            assert aminoacid == self.sequence[label_seq_id - 1], f'ID {self.id}: The annotation {annotation} letter does not match the sequence at the specified position! Annotation = {aminoacid}, Sequence[{label_seq_id}] = {self.sequence[label_seq_id - 1]}'
+            self.annotations.append(label_seq_id)
 
 class Dataset:
     X_train: np.ndarray = None
@@ -79,6 +85,7 @@ class Protein:
         # TN = self.cf[0][0]
         # Sensitivity, hit rate, recall, or true positive rate
         return TP/(TP+FN)
+    
     def get_FPR(self):
         FP = self.cf[1][0]
         # FN = self.cf[0][1]

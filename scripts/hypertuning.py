@@ -1,7 +1,7 @@
 import keras_tuner as kt
 from sklearn.model_selection import StratifiedKFold
 import tensorflow as tf
-from helper import get_json_config, generate_test_train_data, get_class_weights, get_config_filepath
+from helper import get_json_config, generate_test_train_data, get_class_weights, get_config_filepath, limit_memory
 from hypermodel import ApoloHyperModel
 
 def create_hypermodel():
@@ -15,7 +15,7 @@ def create_hypermodel():
     model_directory = get_config_filepath(conf.model_directory)
 
     tuner = kt.Hyperband(ApoloHyperModel(dim_embeddings=dim_embeddings, class_weight=cw),
-                            objective='val_loss',
+                            objective=[kt.Objective('val_auc', direction='max'), kt.Objective('my_sensitivity_at_specificity', direction='max')],
                             max_epochs=150,
                             factor=3,
                             hyperband_iterations=1,
@@ -33,7 +33,7 @@ def create_hypermodel():
 
     y_train, y_val = ttd.y_train[train_index], ttd.y_train[val_index]
 
-    stopper = tf.keras.callbacks.EarlyStopping(monitor='auc_1', min_delta=conf.early_stopping.min_delta, patience=conf.early_stopping.patience, restore_best_weights=True, mode='max')
+    stopper = tf.keras.callbacks.EarlyStopping(monitor='my_sensitivity_at_specificity', min_delta=conf.early_stopping.min_delta, patience=conf.early_stopping.patience, restore_best_weights=True, mode='max')
     # stop_early_val_loss = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
     # find the best set of hyperparameters
@@ -48,7 +48,7 @@ def create_hypermodel():
 
     # Fit again with same validation split to find the best # of epochs
     history1 = model.fit(input_train, tf.one_hot(y_train, 2), class_weight=cw, epochs=conf.early_stopping.max_epochs, validation_data=(input_val, tf.one_hot(y_val, 2)), callbacks=[stopper])
-    best_epoch = history1.history['val_loss'].index(min(history1.history['val_loss']))
+    best_epoch = history1.history['my_sensitivity_at_specificity'].index(max(history1.history['my_sensitivity_at_specificity']))
     
     # Then, do model fit again with all data and same number of epochs
     best_hp_model = tuner.hypermodel.build(tuner.get_best_hyperparameters()[0])

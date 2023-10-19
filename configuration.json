@@ -9,20 +9,20 @@
     "train_annotations_path": "data/annotations_TRAIN.csv",
     "hypermodel": {
         "neuron_size_min": 32,
-        "neuron_size_max": 512,
-        "neuron_size_step": 32,
+        "neuron_size_max": 128,
+        "neuron_size_step": 64,
         "number_of_layers_min": 1,
-        "number_of_layers_max": 3,
+        "number_of_layers_max": 2,
         "number_of_layers_step": 1,
         "dropout_min": 0.3,
         "dropout_max": 0.7,
-        "dropout_step": 0.1,
-        "learning_rate": [1e-2, 1e-3, 1e-4],
-        "batch_size": [16,32,64,96]
+        "dropout_step": 0.2,
+        "learning_rate": [1e-4],
+        "batch_size": [64]
     },
     "early_stopping": {
-        "patience": 4,
-        "min_delta": 0.02,
+        "patience": 2,
+        "min_delta": 0.05,
         "max_epochs": 50
     }
 }
