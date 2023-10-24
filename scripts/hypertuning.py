@@ -1,7 +1,7 @@
 import keras_tuner as kt
 from sklearn.model_selection import StratifiedKFold
 import tensorflow as tf
-from helper import get_json_config, generate_test_train_data, get_class_weights, get_config_filepath, limit_memory
+from helper import get_json_config, generate_test_train_data, get_class_weights, get_config_filepath
 from hypermodel import ApoloHyperModel
 
 def create_hypermodel():

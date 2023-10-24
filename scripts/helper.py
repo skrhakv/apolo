@@ -10,6 +10,9 @@ import numpy as np
 import tensorflow as tf
 from sklearn import metrics        
 from typing import Union, Dict
+import requests
+import zipfile
+import io
 
 def evaluate_predictions(predictions, ys) -> Dict[str, Union[np.ndarray, float]]:
     p = tf.argmax(predictions, 1).numpy()    
@@ -83,6 +86,14 @@ def get_class_weights(y_train) -> Dict[int, float]:
 
     return {0: weight_for_neg, 1: weight_for_pos}
 
+def compute_embeddings_remotely(fasta_file_location, embedding_directory, server_url, embedder):
+    files = {'fasta': open(fasta_file_location,'rb')}
+
+    request = requests.get(f"{server_url}?embedder={embedder}", files=files)
+
+    z = zipfile.ZipFile(io.BytesIO(request.content))
+    z.extractall(embedding_directory)
+
 
 def process_dataset():
     conf = get_json_config()
@@ -91,7 +102,11 @@ def process_dataset():
     train_annotations_path = get_config_filepath(conf.train_annotations_path)
     test_annotations_path = get_config_filepath(conf.test_annotations_path)
     sequences_pickle_directory = get_config_filepath(conf.data_directory)
-
+    fasta_file_location = get_config_filepath(conf.remote_embedding_computation.fasta_file_location)
+    
+    if not conf.remote_embedding_computation.are_embeddings_precomputed:
+        compute_embeddings_remotely(fasta_file_location, embedding_directory, conf.remote_embedding_computation.server_url, conf.remote_embedding_computation.embedder)
+    
     for annotations_path, suffix in [(train_annotations_path, 'TRAIN'), (test_annotations_path, 'TEST')]:
         ds: Dict[str, Sequence] = {}
         with open(annotations_path, 'r') as csvfile:

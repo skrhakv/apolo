@@ -1,6 +1,16 @@
 {
     "project_name": "cryptic-site-pred",
     "data_directory": "data/",
+    "remote_embedding_computation": {
+        "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
+        "are_embeddings_precomputed": false,
+
+        "server_url": "http://127.0.0.1:5050",
+        "fasta_file_location": "data/fasta_file/sequences.fasta",
+
+        "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed", 
+        "embedder": "bert"
+    },
     "embeddings_directory": "data/embedding-files-mmcif-apo-t5",
     "tuner_directory": "data/kt-dir",
     "model_directory": "data/results-apo-t5",
