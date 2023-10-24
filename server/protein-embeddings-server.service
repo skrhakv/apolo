@@ -1,0 +1,19 @@
+[Unit]
+Description=Protein Embeddings Computation Server
+After=syslog.target network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+StartLimitBurst=2
+# Restart, but not more than once every 10 minutes
+#StartLimitInterval=600
+# Restart, but not more than once every 30s (for testing purposes)
+StartLimitInterval=30
+RestartSec=1
+WorkingDirectory=/home/skrhak/protein-embedding/apolo/server
+ExecStart=/home/skrhak/protein-embedding/apolo/server/run-service.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
