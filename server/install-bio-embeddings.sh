@@ -16,6 +16,7 @@ sudo apt-get install python3.7-dev
 
 # install bio-embeddings package using the borrowed GPU (that's why I use 'bitfusion' command)
 bitfusion run -n 1 -p 0.25 -- python3.7 -m pip install biopython transformers bio-embeddings[transformers] --force-reinstall --upgrade
+bitfusion run -n 1 -p 0.25 -- python3.7 -m pip install bio-embeddings[esm] --force-reinstall --upgrade
 # bump the CUDA version in pyTorch 
 bitfusion run -n 1 -p 0.25 -- python3.7 -m pip install torch==1.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 

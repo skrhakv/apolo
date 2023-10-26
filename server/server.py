@@ -12,15 +12,6 @@ app = Flask(__name__)
 @app.route('/')
 def compute_embeddings():
 
-    # define what to do after the request has finished
-    @after_this_request
-    def remove_file(response):
-        try:
-            shutil.rmtree(unique_dir)
-        except Exception as error:
-            app.logger.error("Error removing generated directory", error)
-        return response
-
     # generate output dir
     unique_dir = uuid.uuid4().hex
     fasta_dir = unique_dir + '/fasta-file'
@@ -30,6 +21,15 @@ def compute_embeddings():
     os.makedirs(fasta_dir)
     os.makedirs(embeddings_dir)
 
+    # define what to do after the request has finished
+    @after_this_request
+    def remove_file(response):
+        try:
+            shutil.rmtree(unique_dir)
+        except Exception as error:
+            app.logger.error("Error removing generated directory", error)
+        return response
+    
     # read the embedder type
     embedder = request.args.get('embedder', default=-1)
     
