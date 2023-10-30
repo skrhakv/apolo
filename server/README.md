@@ -2,6 +2,13 @@
 ## Instalation
 Please see `install-bio-embeddings.sh` script for instalation steps for Ubuntu.
 
+## Usage
+If you have your server running, you can use cURL to send queries:
+```
+curl  -X  GET  -i  -F "fasta=@sequences.fasta" http://127.0.0.1:5000?embedder=bert --output tmp.zip
+```
+where you input URL to your server instead of `http://127.0.0.1:5000`. The parameter `embedder=bert` specifies the model and you should provide your protein sequences in the `sequences.fasta` file.
+
 ## Troubleshooting
 I encountered this error during the loading of `ESM1bEmbedder`:
 ```

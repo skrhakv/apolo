@@ -33,7 +33,7 @@ def compute_embeddings():
     # read the embedder type
     embedder = request.args.get('embedder', default=-1)
     
-    if embedder not in ['xlnet', 'bert', 'albert', 'onehot', 't5', 'esm']:
+    if embedder not in ['bert', 't5', 'esm']:
         abort(400, 'Unknown embedder type') 
 
     # load the sequences into a file

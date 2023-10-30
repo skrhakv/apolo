@@ -7,25 +7,25 @@ unique_dir = sys.argv[2]
 
 embedder = None 
 # XLNET 
-if embedder_id=="xlnet":
-    from bio_embeddings.embed.prottrans_xlnet_uniref100_embedder import ProtTransXLNetUniRef100Embedder
-    embedder = ProtTransXLNetUniRef100Embedder()
+# if embedder_id=="xlnet":
+#     from bio_embeddings.embed.prottrans_xlnet_uniref100_embedder import ProtTransXLNetUniRef100Embedder
+#     embedder = ProtTransXLNetUniRef100Embedder()
 # BERT 
 if embedder_id=="bert":
     from bio_embeddings.embed.prottrans_bert_bfd_embedder import ProtTransBertBFDEmbedder
     embedder = ProtTransBertBFDEmbedder()
-# ALBERT
-if embedder_id=="albert":
-    from bio_embeddings.embed.prottrans_albert_bfd_embedder import ProtTransAlbertBFDEmbedder
-    embedder = ProtTransAlbertBFDEmbedder()
-# ALBERT
-if embedder_id=="onehot":
-    from bio_embeddings.embed.one_hot_encoding_embedder import OneHotEncodingEmbedder
-    embedder = OneHotEncodingEmbedder()
+# # ALBERT
+# if embedder_id=="albert":
+#     from bio_embeddings.embed.prottrans_albert_bfd_embedder import ProtTransAlbertBFDEmbedder
+#     embedder = ProtTransAlbertBFDEmbedder()
+# # ALBERT
+# if embedder_id=="onehot":
+#     from bio_embeddings.embed.one_hot_encoding_embedder import OneHotEncodingEmbedder
+#     embedder = OneHotEncodingEmbedder()
 # T5
 if embedder_id=="t5":
     from bio_embeddings.embed.prottrans_t5_embedder import ProtTransT5XLU50Embedder
-    embedder = ProtTransT5XLU50Embedder(half_model=True)
+    embedder = ProtTransT5XLU50Embedder()
 # ESM1b
 if embedder_id=="esm":
     from bio_embeddings.embed.esm_embedder import ESM1bEmbedder
@@ -38,7 +38,7 @@ with open(unique_dir + '/fasta-file/sequences.fasta') as handle:
         if embedder_id == 'esm':
             treshold = 1022
             vectors = []
-            while len(s) > 0:
+            while len(sequence) > 0:
                 s1 = sequence[:treshold]
                 sequence = sequence[treshold:]
                 vectors1 = np.array(embedder.embed(s1))
