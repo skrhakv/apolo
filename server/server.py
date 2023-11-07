@@ -6,6 +6,9 @@ import shutil
 
 app = Flask(__name__)
 
+@app.route('/healthcheck')
+def healthcheck():
+    return "OK"
 # debug using curl:
 # curl  -X  GET  -i  -F "fasta=@sequences.fasta" http://127.0.0.1:5000?embedder=bert --output tmp.zip
 # where 'sequences.fasta' is a FASTA file containing sequences in FASTA format
