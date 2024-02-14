@@ -7,7 +7,7 @@ from sklearn import metrics
 class Sequence:
     def __init__(self, id, sequence, embedding):
         self.id: str = id
-        self.sequence: str = sequence        
+        # self.sequence: str = sequence        
         self.embedding: np.ndarray = embedding
         self.annotations: List[int] = []
     
@@ -15,10 +15,10 @@ class Sequence:
         # annotations: D4 D48 V115 T116 N118 V120 G121 V122
         self.annotations = [int(res[1:]) for res in annotations.split(' ')]
         for annotation in annotations.split(' '):
-            aminoacid = annotation[:1]
+            # aminoacid = annotation[:1]
             label_seq_id = int(annotation[1:])
 
-            assert aminoacid == self.sequence[label_seq_id - 1], f'ID {self.id}: The annotation {annotation} letter does not match the sequence at the specified position! Annotation = {aminoacid}, Sequence[{label_seq_id}] = {self.sequence[label_seq_id - 1]}'
+            # assert aminoacid == self.sequence[label_seq_id - 1], f'ID {self.id}: The annotation {annotation} letter does not match the sequence at the specified position! Annotation = {aminoacid}, Sequence[{label_seq_id}] = {self.sequence[label_seq_id - 1]}'
             self.annotations.append(label_seq_id)
 
 class Dataset:

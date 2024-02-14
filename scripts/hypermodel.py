@@ -35,7 +35,7 @@ class ApoloHyperModel(kt.HyperModel):
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp.Choice('learning_rate', values=self.config.hypermodel.learning_rate)),
             loss=keras.losses.CategoricalCrossentropy(from_logits=False),
-            metrics=[keras.metrics.CategoricalAccuracy(), auc, sensitivity_at_specificity]
+            metrics=[tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2), keras.metrics.CategoricalAccuracy()]
             )            
             
         return model

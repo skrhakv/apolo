@@ -3,36 +3,44 @@
     "data_directory": "data/",
     "remote_embedding_computation": {
         "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
-        "are_embeddings_precomputed": false,
-
+        "are_embeddings_precomputed": true,
         "server_url": "http://127.0.0.1:5050",
         "fasta_file_location": "data/fasta_file/sequences.fasta",
-
-        "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed", 
+        "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed",
         "embedder": "bert"
     },
-    "embeddings_directory": "data/embedding-files-mmcif-apo-t5",
+    "embeddings_directory": "data/embeddings/esm2",
     "tuner_directory": "data/kt-dir",
-    "model_directory": "data/results-apo-t5",
+    "model_directory": "data/results-apo-esm2",
     "statistics_directory": "data/statistics",
     "test_annotations_path": "data/annotations_TEST.csv",
-    "train_annotations_path": "data/annotations_TRAIN.csv",
+    "train_annotations_path": [
+        "data/annotations_TRAIN_FOLD_0.csv",
+        "data/annotations_TRAIN_FOLD_1.csv",
+        "data/annotations_TRAIN_FOLD_2.csv",
+        "data/annotations_TRAIN_FOLD_3.csv",
+        "data/annotations_TRAIN_FOLD_4.csv"
+    ],
     "hypermodel": {
         "neuron_size_min": 32,
-        "neuron_size_max": 128,
-        "neuron_size_step": 64,
+        "neuron_size_max": 170,
+        "neuron_size_step": 170,
         "number_of_layers_min": 1,
         "number_of_layers_max": 2,
         "number_of_layers_step": 1,
         "dropout_min": 0.3,
         "dropout_max": 0.7,
-        "dropout_step": 0.2,
-        "learning_rate": [1e-4],
-        "batch_size": [64]
+        "dropout_step": 0.7,
+        "learning_rate": [
+            1e-4
+        ],
+        "batch_size": [
+            64
+        ]
     },
     "early_stopping": {
-        "patience": 2,
-        "min_delta": 0.05,
+        "patience": 10,
+        "min_delta": 0,
         "max_epochs": 50
     }
 }
