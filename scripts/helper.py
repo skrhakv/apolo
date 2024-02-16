@@ -86,7 +86,7 @@ def generate_test_train_data(fold_validation=-1) -> Dataset:
             open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'rb'))
     else:
         train_set = {}
-        for i in len(train_annotations_paths):
+        for i in range(len(train_annotations_paths)):
             if fold_validation == i:
                 continue
             train_set = train_set | pickle.load(

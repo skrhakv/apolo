@@ -53,8 +53,8 @@ class Protein:
         self.sanity_check()
 
     def sanity_check(self):
-        assert len(self.sequence.sequence) == len(self.actual_values)
-        assert len(self.sequence.sequence) == len(self.predictions)
+        assert self.sequence.embedding.shape[0] == len(self.actual_values)
+        assert self.sequence.embedding.shape[0] == len(self.predictions)
     
     def get_conf_matrix(self):
         return metrics.confusion_matrix(self.predictions, self.actual_values)

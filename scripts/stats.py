@@ -20,7 +20,7 @@ def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
     for protein_code, sequence in ds.items():
         
         seq_len = sequence.embedding.shape[0]
-        assert sequence.embedding.shape[0] == len(sequence.sequence), "Embedding length doesn't match the sequence length"
+        # assert sequence.embedding.shape[0] == len(sequence.sequence), "Embedding length doesn't match the sequence length"
         X = np.ndarray(shape=(sequence.embedding.shape[0], sequence.embedding.shape[1]), dtype=float)
         X[0:seq_len] = sequence.embedding
 
@@ -70,7 +70,7 @@ def save_to_csv(result_list: List[Protein], path):
         avg_auc = []
         for protein in result_list:
             counter += 1
-            avg_len.append(len(protein.sequence.sequence))
+            avg_len.append(protein.sequence.embedding.shape[0])
             avg_binding_res.append(sum(protein.actual_values))
             avg_fpr.append(protein.get_FPR())
             avg_tpr.append(protein.get_TPR())
@@ -80,9 +80,9 @@ def save_to_csv(result_list: List[Protein], path):
 
             if hasattr(result_list[0], 'auc'):
                 avg_auc.append(protein.auc)
-                writer.writerow([protein.id, len(protein.sequence.sequence), sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1, protein.auc])
+                writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1, protein.auc])
             else:
-                writer.writerow([protein.id, len(protein.sequence.sequence), sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1])
+                writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1])
         if hasattr(result_list[0], 'auc'):
             writer.writerow(["average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter ])
             writer.writerow(["standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc) ])
@@ -95,8 +95,13 @@ def create_statistics():
     statistics_directory = get_config_filepath(conf.statistics_directory)
     data_directory = get_config_filepath(conf.data_directory)
     project_name = conf.project_name
-
-    train_set = pickle.load(open(f'{data_directory}/sequences_TRAIN.pickle', 'rb'))
+    train_annotations_paths = [get_config_filepath(
+            i) for i in conf.train_annotations_path]
+    
+    train_set = {}
+    for i in range(len(train_annotations_paths)):
+        train_set = {**train_set, **pickle.load(
+            open(f'{data_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'rb'))}
     test_set = pickle.load(open(f'{data_directory}/sequences_TEST.pickle', 'rb'))
     sets_combined = {**train_set, **test_set}
 

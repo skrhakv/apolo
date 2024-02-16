@@ -1,6 +1,6 @@
 {
     "project_name": "cryptic-site-pred",
-    "data_directory": "data/",
+    "data_directory": "data",
     "remote_embedding_computation": {
         "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
         "are_embeddings_precomputed": true,
@@ -10,8 +10,8 @@
         "embedder": "bert"
     },
     "embeddings_directory": "data/embeddings/esm2",
-    "tuner_directory": "data/kt-dir",
-    "model_directory": "data/results-apo-esm2",
+    "tuner_directory": "data/hyperparameter-tuning",
+    "model_directory": "data/results-apo-esm2-2",
     "statistics_directory": "data/statistics",
     "test_annotations_path": "data/annotations_TEST.csv",
     "train_annotations_path": [
@@ -22,25 +22,25 @@
         "data/annotations_TRAIN_FOLD_4.csv"
     ],
     "hypermodel": {
-        "neuron_size_min": 32,
-        "neuron_size_max": 170,
-        "neuron_size_step": 170,
+        "neuron_size_min": 128,
+        "neuron_size_max": 257,
+        "neuron_size_step": 64,
         "number_of_layers_min": 1,
-        "number_of_layers_max": 2,
+        "number_of_layers_max": 3,
         "number_of_layers_step": 1,
         "dropout_min": 0.3,
         "dropout_max": 0.7,
-        "dropout_step": 0.7,
+        "dropout_step": 0.2,
         "learning_rate": [
             1e-4
         ],
         "batch_size": [
-            64
+             128, 254
         ]
     },
     "early_stopping": {
-        "patience": 10,
-        "min_delta": 0,
+        "patience": 5,
+        "min_delta": 0.1,
         "max_epochs": 50
     }
 }
