@@ -26,12 +26,36 @@ class Dataset:
     X_test: np.ndarray = None
     y_train: np.ndarray = None
     y_test: np.ndarray = None
+    groups: List[int] = []
+
+    def append_train(self, other):
+        result = Dataset()
+        result.X_train = np.concatenate((self.X_train, other.X_train), axis=0)
+        if other.X_test == None and self.X_test == None:
+            result.X_test = None
+        elif len(other.X_test) > 0 and len(self.X_test) > 0:
+            result.X_test = np.concatenate((self.X_test, other.X_test), axis=0)
+        elif len(self.X_test) == 0:
+            result.X_test = other.X_test
+        else:
+            result.X_test = self.X_test
+        result.y_train = self.y_train + other.y_train
+        if other.y_test == None and self.y_test == None:
+            result.y_test = None
+        else:
+            result.y_test = self.y_test + other.y_test
+        result.groups = self.groups + other.groups
+        return result
+        
 
 class Results:
-    def __init__(self, actual_values, predictions, stats):
+    def __init__(self, actual_values, predictions, stats, protein_code):
         self.actual_values = actual_values
         self.predictions = predictions
         self.stats = stats
+        with open(f'../data/predictions/{protein_code}.txt', 'w') as f:
+            for actual, pred in zip(self.actual_values, self.predictions):
+                f.write(f'{actual} {pred[1]}\n')
 
 class Protein:
     def __init__(self, id, sequence, predictions, actual_values, prank=False):

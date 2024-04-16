@@ -49,7 +49,6 @@ def generate_classifier_data(ds: Dict[str, Sequence]):
     y = []
     i = 0
     for id, val in ds.items():
-        print(f'processing {id} ... ')
         if val.embedding is None:
             continue
         seq_len = val.embedding.shape[0]
@@ -64,16 +63,19 @@ def generate_classifier_data(ds: Dict[str, Sequence]):
                 print(id, ix)
             y_aux[ix - 1] = 1
         y += y_aux
+        assert val.embedding.shape[0] == len(y_aux)
+        #     val.sequence), f"Embedding length doesn't match the sequence length: {val.sequence}"
+
     return X, y
 
 
-def generate_test_train_data(fold_validation=-1) -> Dataset:
+def generate_test_train_data(validation_folds=False) -> Dataset:
     conf = get_json_config()
     sequences_pickle_directory = get_config_filepath(conf.data_directory)
     train_annotations_paths = [get_config_filepath(
         i) for i in conf.train_annotations_path]
 
-    if fold_validation == -1:
+    if not validation_folds:
         train_set = {}
         print('load train set ...')
         for i in range(len(train_annotations_paths)):
@@ -84,27 +86,36 @@ def generate_test_train_data(fold_validation=-1) -> Dataset:
 
         test_set = pickle.load(
             open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'rb'))
+        
+        ttd = Dataset()
+        print('processing train set ...')
+        ttd.X_train, ttd.y_train = generate_classifier_data(train_set)
+        print('processing test set ...')
+        ttd.X_test, ttd.y_test = generate_classifier_data(test_set)
+
     else:
-        train_set = {}
+        print('load train set ...')
+        ttd = Dataset()
+
         for i in range(len(train_annotations_paths)):
-            if fold_validation == i:
-                continue
-            train_set = train_set | pickle.load(
+            print(f'\t load fold {i} ...')
+            train_set = pickle.load(
                 open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'rb'))
-        test_set = pickle.load(open(
-            f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{fold_validation}.pickle', 'rb'))
+            tmp_ttd = Dataset()
+            tmp_ttd.X_train, tmp_ttd.y_train = generate_classifier_data(train_set)
+            tmp_ttd.groups = [i] * len(tmp_ttd.y_train) 
+            if len(ttd.groups) != 0:
+                ttd = ttd.append_train(tmp_ttd)
+            else: ttd = tmp_ttd
+
     print('generate dataset ...')
 
-    ttd = Dataset()
-    print('processing train set ...')
-    ttd.X_train, ttd.y_train = generate_classifier_data(train_set)
-    print('processing test set ...')
-    ttd.X_test, ttd.y_test = generate_classifier_data(test_set)
-
     ttd.X_train = ttd.X_train.astype("float32")
-    ttd.X_test = ttd.X_test.astype("float32")
+    if ttd.X_test is not None:
+        ttd.X_test = ttd.X_test.astype("float32")
     ttd.y_train = np.array(ttd.y_train).astype("float32")
-    ttd.y_test = np.array(ttd.y_test).astype("float32")
+    if ttd.X_test is not None:
+        ttd.y_test = np.array(ttd.y_test).astype("float32")
 
     return ttd
 
@@ -153,6 +164,8 @@ def process_dataset():
         for row in reader:
             id = row[0].lower() + row[1].upper()
             annotations = row[3]
+            if annotations == '':
+                continue
             sequence = row[4]
             embedding = np.load(f'{embedding_directory}/{id}.npy')
 
@@ -160,7 +173,6 @@ def process_dataset():
 
             # check data consistency
             # assert ds[id].sequence == sequence
-
             ds[id].add_annotations(annotations)
 
     with open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'wb') as f:
@@ -175,6 +187,8 @@ def process_dataset():
             for row in reader:
                 id = row[0].lower() + row[1].upper()
                 annotations = row[3]
+                if annotations == '':
+                    continue
                 sequence = row[4]
                 embedding = np.load(f'{embedding_directory}/{id}.npy')
 

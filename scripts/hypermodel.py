@@ -29,21 +29,24 @@ class ApoloHyperModel(kt.HyperModel):
         output_layer = layers.Dense(2, activation="softmax")(x)
             
         model = keras.Model(inputs=inputs, outputs=output_layer)
-        auc = tf.keras.metrics.AUC()
-        sensitivity_at_specificity = tf.keras.metrics.SensitivityAtSpecificity(specificity=0.9, name='my_sensitivity_at_specificity')
-
+        # auc = tf.keras.metrics.AUC()
+        # sensitivity_at_specificity = tf.keras.metrics.SensitivityAtSpecificity(specificity=0.9, name='my_sensitivity_at_specificity')
+        f1_score = tf.keras.metrics.F1Score(name='f1_score')
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp.Choice('learning_rate', values=self.config.hypermodel.learning_rate)),
             loss=keras.losses.CategoricalCrossentropy(from_logits=False),
-            metrics=[tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2), keras.metrics.CategoricalAccuracy()]
+            metrics=[f1_score, tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2, name='mcc'), keras.metrics.CategoricalAccuracy()]
             )            
             
         return model
     
     def fit(self, hp, model, *args, **kwargs):    
+        stopper = EarlyStopping(monitor='mcc', min_delta=self.config.early_stopping.min_delta, patience=self.config.early_stopping.patience, restore_best_weights=True)
+
         return model.fit(
             *args,
             batch_size=hp.Choice("batch_size", self.config.hypermodel.batch_size),
             class_weight=self._class_weight,
+            callbacks=[stopper]
             **kwargs,
         )

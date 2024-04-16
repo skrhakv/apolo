@@ -1,5 +1,5 @@
 {
-    "project_name": "cryptic-site-pred",
+    "project_name": "cryptic-site-pred-oracle",
     "data_directory": "data",
     "remote_embedding_computation": {
         "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
@@ -9,22 +9,22 @@
         "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed",
         "embedder": "bert"
     },
-    "embeddings_directory": "data/embeddings/esm2",
+    "embeddings_directory": "data/embeddings/esm2-multi",
     "tuner_directory": "data/hyperparameter-tuning",
-    "model_directory": "data/results-apo-esm2-2",
-    "statistics_directory": "data/statistics",
-    "test_annotations_path": "data/annotations_TEST.csv",
+    "model_directory": "data/results-apo-esm2-oracle-multi",
+    "statistics_directory": "data/statistics-multi",
+    "test_annotations_path": "data/annotations/annotations-multi/annotations_TEST.csv",
     "train_annotations_path": [
-        "data/annotations_TRAIN_FOLD_0.csv",
-        "data/annotations_TRAIN_FOLD_1.csv",
-        "data/annotations_TRAIN_FOLD_2.csv",
-        "data/annotations_TRAIN_FOLD_3.csv",
-        "data/annotations_TRAIN_FOLD_4.csv"
+        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_0.csv",
+        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_1.csv",
+        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_2.csv",
+        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_3.csv",
+        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_4.csv"
     ],
     "hypermodel": {
         "neuron_size_min": 128,
-        "neuron_size_max": 257,
-        "neuron_size_step": 64,
+        "neuron_size_max": 512,
+        "neuron_size_step": 128,
         "number_of_layers_min": 1,
         "number_of_layers_max": 3,
         "number_of_layers_step": 1,
@@ -32,14 +32,14 @@
         "dropout_max": 0.7,
         "dropout_step": 0.2,
         "learning_rate": [
-            1e-4
+            1e-4, 1e-3
         ],
         "batch_size": [
-             128, 254
+             128
         ]
     },
     "early_stopping": {
-        "patience": 5,
+        "patience": 2,
         "min_delta": 0.1,
         "max_epochs": 50
     }

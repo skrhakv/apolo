@@ -33,7 +33,7 @@ def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
 
         predictions = best_trained_model.predict(X)
 
-        results[protein_code] = Results(y, predictions, evaluate_predictions(predictions, y))
+        results[protein_code] = Results(y, predictions, evaluate_predictions(predictions, y), protein_code)
     return results
 
 def process_set(ds, results: Dict[str, Results]) -> List[Protein]:
@@ -48,6 +48,7 @@ def process_set(ds, results: Dict[str, Results]) -> List[Protein]:
             threshold_counter += 1
     return proteins
 
+not_in_pocketminer = set(['3a7gA' ,'1k3aA' ,'3wrfA' ,'5n0xB' ,'6cwwB' ,'8bhuAAA' ,'7av9AAA' ,'6eyrA' ,'1f13B' ,'2e1cA' ,'3vc7B' ,'3ih2A' ,'2yzgA' ,'1eooA' ,'3futA' ,'7l8qA' ,'3fixB' ,'5cxgD' ,'1h13A' ,'5yj2C' ,'5o2nA' ,'3zniM' ,'3m5vB' ,'4tl1B' ,'2zosB' ,'4x1cF' ,'2nvpA' ,'3us5A' ,'2cxyA' ,'6pczB' ,'1vk4A' ,'4bg8A' ,'5oa5B' ,'4bktC' ,'3bjpA' ,'1t5hX' ,'3q7nA' ,'3spbC' ,'1rtuA' ,'1x2gC' ,'3i7cA'])
 def save_to_csv(result_list: List[Protein], path):
     with open(path, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -69,6 +70,8 @@ def save_to_csv(result_list: List[Protein], path):
         avg_f1 = []
         avg_auc = []
         for protein in result_list:
+            if protein.id in not_in_pocketminer:
+                continue
             counter += 1
             avg_len.append(protein.sequence.embedding.shape[0])
             avg_binding_res.append(sum(protein.actual_values))
