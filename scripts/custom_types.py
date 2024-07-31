@@ -10,16 +10,20 @@ class Sequence:
         # self.sequence: str = sequence        
         self.embedding: np.ndarray = embedding
         self.annotations: List[int] = []
-    
-    def add_annotations(self, annotations):
-        # annotations: A_D126 A_Q129 A_K130 A_G133 C_P157 C_V158 C_P159 C_K162 C_V294 C_L295
-        self.annotations = [int(res[1:]) for res in annotations.split(' ')]
+        self.noncryptic_annotations: List[int] = []
+
+    def add_annotations(self, annotations, is_noncryptic=False):
+        # annotations: D126 Q129 K130 G133 P157 V158 P159 K162 V294 L295
+
         for annotation in annotations.split(' '):
             # aminoacid = annotation[:1]
             label_seq_id = int(annotation[1:])
 
             # assert aminoacid == self.sequence[label_seq_id - 1], f'ID {self.id}: The annotation {annotation} letter does not match the sequence at the specified position! Annotation = {aminoacid}, Sequence[{label_seq_id}] = {self.sequence[label_seq_id - 1]}'
-            self.annotations.append(label_seq_id)
+            if not is_noncryptic:
+                self.annotations.append(label_seq_id)
+            else: 
+                self.noncryptic_annotations.append(label_seq_id)
 
 class Dataset:
     X_train: np.ndarray = None

@@ -14,6 +14,7 @@
     "model_directory": "data/results-apo-esm2",
     "statistics_directory": "data/statistics",
     "test_annotations_path": "data/cryptobench-translated-annotations/test.csv",
+    "test_noncryptic_annotations_path": "data/cryptobench-noncryptic-translated-annotations/test.csv",
     "train_annotations_path": [
         "data/cryptobench-translated-annotations/train-fold-0.csv",
         "data/cryptobench-translated-annotations/train-fold-1.csv",
