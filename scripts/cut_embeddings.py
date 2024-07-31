@@ -21,9 +21,9 @@ import requests
 import numpy as np
 import csv
 
-file = 'train-fold-3.csv'
-INPUT_FILE = f'/home/skrhakv/apolo/data/cryptobench-annotations/{file}'
-OUTPUT_FILE = f'/home/skrhakv/apolo/data/cryptobench-translated-annotations/{file}'
+file = 'test.csv'
+INPUT_FILE = f'/home/skrhakv/apolo/data/cryptobench-noncryptic-annotations/{file}'
+OUTPUT_FILE = f'/home/skrhakv/apolo/data/cryptobench-noncryptic-translated-annotations/{file}'
 EMBEDDINGS_INPUT_DIR = '/home/skrhakv/esm2/embeddings/cryptobench-ahojv2'
 EMBEDDINGS_OUTPUT_DIR = '/home/skrhakv/apolo/data/cryptobench-ahojv2-cut'
 HEADER = {
@@ -43,16 +43,16 @@ def main():
     with open(INPUT_FILE, 'r') as csvfile:
         counter = 0
         reader = csv.reader(csvfile, delimiter=';')
-        skip = True
+        # skip = True
         for row in reader:
             pdb_id = row[0].lower()
             chain_ids = row[1].split('-')
             uniprot_ids = row[2].split('-')
             annotations = row[3].split(' ')
 
-            if pdb_id == '7pxp':
-                skip = False
-            if skip: continue
+            # if pdb_id == '7pxp':
+            #     skip = False
+            # if skip: continue
 
             if len(uniprot_ids) < len(chain_ids):
                 uniprot_ids = [uniprot_ids[0] for _ in chain_ids]
@@ -110,14 +110,15 @@ def main():
                     # get embedding
                     indices_of_embedding.append(residue['features']['UniProt'][uniprot_id]['unp_residue_number'] - 1)
                 
-                embedding = np.load(f'{EMBEDDINGS_INPUT_DIR}/{uniprot_id}.npy')
+                # embedding = np.load(f'{EMBEDDINGS_INPUT_DIR}/{uniprot_id}.npy')
 
-                new_embedding = np.take(embedding, indices_of_embedding, axis=0)
+                # new_embedding = np.take(embedding, indices_of_embedding, axis=0)
 
-                assert len(build_annotations) - old_build_annotations_len == new_embedding.shape[0], f'{len(build_annotations)}, {new_embedding.shape[0]}'
+                # assert len(build_annotations) - old_build_annotations_len == new_embedding.shape[0], f'{len(build_annotations)}, {new_embedding.shape[0]}'
+                assert len(build_annotations) - old_build_annotations_len == len(indices_of_embedding), f'{len(build_annotations)}, {len(indices_of_embedding)}'
     
-                with open(f'{EMBEDDINGS_OUTPUT_DIR}/{pdb_id}{chain_id}.npy', 'wb') as f:
-                    np.save(f, new_embedding)
+                # with open(f'{EMBEDDINGS_OUTPUT_DIR}/{pdb_id}{chain_id}.npy', 'wb') as f:
+                #     np.save(f, new_embedding)
             
                 new_annotations = []
 
