@@ -12,7 +12,7 @@ class Sequence:
         self.annotations: List[int] = []
     
     def add_annotations(self, annotations):
-        # annotations: D4 D48 V115 T116 N118 V120 G121 V122
+        # annotations: A_D126 A_Q129 A_K130 A_G133 C_P157 C_V158 C_P159 C_K162 C_V294 C_L295
         self.annotations = [int(res[1:]) for res in annotations.split(' ')]
         for annotation in annotations.split(' '):
             # aminoacid = annotation[:1]

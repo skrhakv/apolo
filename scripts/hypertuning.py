@@ -33,7 +33,7 @@ def create_hypermodel():
                             directory=tuner_directory,    
                             scoring=metrics.make_scorer(f1_categorical),                 
                             project_name=project_name,
-                            cv=GroupKFold(n_splits=5)
+                            cv=GroupKFold(n_splits=4)
                             )   
     print('create folds ...')
 

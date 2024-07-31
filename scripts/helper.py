@@ -162,18 +162,21 @@ def process_dataset():
 
         reader = csv.reader(csvfile, delimiter=';')
         for row in reader:
-            id = row[0].lower() + row[1].upper()
-            annotations = row[3]
-            if annotations == '':
-                continue
-            sequence = row[4]
-            embedding = np.load(f'{embedding_directory}/{id}.npy')
+            for chain_id in row[1].split('-'):
+                id = row[0].lower() + chain_id
+                annotations = row[3]
+                if annotations == '':
+                    continue
 
-            ds[id] = Sequence(id, sequence, embedding)
+                annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                sequence = row[4]
+                embedding = np.load(f'{embedding_directory}/{id}.npy')
 
-            # check data consistency
-            # assert ds[id].sequence == sequence
-            ds[id].add_annotations(annotations)
+                ds[id] = Sequence(id, sequence, embedding)
+
+                # check data consistency
+                # assert ds[id].sequence == sequence
+                ds[id].add_annotations(' '.join(annotations))
 
     with open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'wb') as f:
         pickle.dump(ds, f)
@@ -185,18 +188,22 @@ def process_dataset():
         with open(train_annotations_path, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=';')
             for row in reader:
-                id = row[0].lower() + row[1].upper()
-                annotations = row[3]
-                if annotations == '':
-                    continue
-                sequence = row[4]
-                embedding = np.load(f'{embedding_directory}/{id}.npy')
+                for chain_id in row[1].split('-'):
+                    id = row[0].lower() + chain_id
+                    annotations = row[3]
 
-                ds[id] = Sequence(id, sequence, embedding)
+                    annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                    
+                    if len(annotations) < 1:
+                        continue
+                    
+                    sequence = row[4]
+                    embedding = np.load(f'{embedding_directory}/{id}.npy')
 
-                # check data consistency
-                # assert ds[id].sequence == sequence
+                    ds[id] = Sequence(id, sequence, embedding)
+                    # check data consistency
+                    # assert ds[id].sequence == sequence
+                    ds[id].add_annotations(' '.join(annotations))
 
-                ds[id].add_annotations(annotations)
         with open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'wb') as f:
             pickle.dump(ds, f)

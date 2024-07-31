@@ -1,5 +1,5 @@
 {
-    "project_name": "cryptic-site-pred-oracle",
+    "project_name": "cryptic-site-pred",
     "data_directory": "data",
     "remote_embedding_computation": {
         "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
@@ -9,17 +9,16 @@
         "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed",
         "embedder": "bert"
     },
-    "embeddings_directory": "data/embeddings/esm2-multi",
+    "embeddings_directory": "data/cryptobench-ahojv2-cut",
     "tuner_directory": "data/hyperparameter-tuning",
-    "model_directory": "data/results-apo-esm2-oracle-multi",
-    "statistics_directory": "data/statistics-multi",
-    "test_annotations_path": "data/annotations/annotations-multi/annotations_TEST.csv",
+    "model_directory": "data/results-apo-esm2",
+    "statistics_directory": "data/statistics",
+    "test_annotations_path": "data/cryptobench-translated-annotations/test.csv",
     "train_annotations_path": [
-        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_0.csv",
-        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_1.csv",
-        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_2.csv",
-        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_3.csv",
-        "data/annotations/annotations-multi/annotations_TRAIN_FOLD_4.csv"
+        "data/cryptobench-translated-annotations/train-fold-0.csv",
+        "data/cryptobench-translated-annotations/train-fold-1.csv",
+        "data/cryptobench-translated-annotations/train-fold-2.csv",
+        "data/cryptobench-translated-annotations/train-fold-3.csv"
     ],
     "hypermodel": {
         "neuron_size_min": 128,
