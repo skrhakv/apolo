@@ -13,6 +13,8 @@ import os
 def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
     conf = get_json_config()
     model_directory = get_config_filepath(conf.model_directory)
+    predictions_output_directory = get_config_filepath(conf.predictions_output_directory)
+
     project_name = conf.project_name
     best_trained_model: tf.keras.Model = keras.models.load_model(f'{model_directory}/models/{project_name}/best_trained', custom_objects={'MatthewsCorrelationCoefficient': tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2)})
 
@@ -25,30 +27,15 @@ def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
         X[0:seq_len] = sequence.embedding
 
         y = [0]*seq_len
-
-        noncryptic = set([i - 1 for i in sequence.noncryptic_annotations])
-        cryptic = [i - 1 for i in sequence.annotations]
-
-        for ix in cryptic:
-            if ix in noncryptic:
-                noncryptic.remove(ix)
-        
-        noncryptic = list(noncryptic)
-
         for ix in sequence.annotations:
             y[ix - 1] = 1
-        # for ix in sequence.noncryptic_annotations:
-        #     y[ix - 1] = 1
 
-        X = np.delete(X.astype("float32"), noncryptic, axis=0)
-        y = np.delete(np.array(y).astype("float32"), noncryptic)
+        X = X.astype("float32")
+        y = np.array(y).astype("float32")
 
-        assert len(sequence.annotations) == np.sum(y)
-        
-        sequence.embedding = X
         predictions = best_trained_model.predict(X)
 
-        results[protein_code] = Results(y, predictions, evaluate_predictions(predictions, y), protein_code)
+        results[protein_code] = Results(y, predictions, evaluate_predictions(predictions, y), protein_code, predictions_output_directory)
     return results
 
 def process_set(ds, results: Dict[str, Results]) -> List[Protein]:
@@ -63,7 +50,9 @@ def process_set(ds, results: Dict[str, Results]) -> List[Protein]:
             threshold_counter += 1
     return proteins
 
-# not_in_pocketminer = set(['3a7gA' ,'1k3aA' ,'3wrfA' ,'5n0xB' ,'6cwwB' ,'8bhuAAA' ,'7av9AAA' ,'6eyrA' ,'1f13B' ,'2e1cA' ,'3vc7B' ,'3ih2A' ,'2yzgA' ,'1eooA' ,'3futA' ,'7l8qA' ,'3fixB' ,'5cxgD' ,'1h13A' ,'5yj2C' ,'5o2nA' ,'3zniM' ,'3m5vB' ,'4tl1B' ,'2zosB' ,'4x1cF' ,'2nvpA' ,'3us5A' ,'2cxyA' ,'6pczB' ,'1vk4A' ,'4bg8A' ,'5oa5B' ,'4bktC' ,'3bjpA' ,'1t5hX' ,'3q7nA' ,'3spbC' ,'1rtuA' ,'1x2gC' ,'3i7cA'])
+# also missing because some bug in the uniprot mapping: 7ndl
+not_in_pocketminer = ['7ndl', '4x19', '5igh', '1se8', '5yj2', '1fd4', '3bjp', '5aon', '4fkm', '2phz', '3mwg', '3t8b', '1fe6', '4dnc', '2dfp', '7nbc', '5acv', '5wm9', '3la7', '3bk9', '2czd', '3ve9', '5ujp', '7np0', '1tmi', '3hrm', '4bg8', '1h13', '2nt1', '2xdo', '3b1o', '4jax', '5h8k', '3kjr', '8gxj', '2idj', '2vqz', '3uyi', '5m7r', '4z0y', '2zcg', '5n49', '8hc1', '2vyr', '3lnz', '1xxo', '4nzv', '8h49', '6syh', '1x2g', '1g1m', '7c48', '3pfp', '5dy9', '7qzr', '4p32', '1k47', '2huw', '5gmc', '1r3m', '3x0x']
+
 def save_to_csv(result_list: List[Protein], path):
     with open(path, 'w', newline='') as file:
         writer = csv.writer(file)
@@ -84,9 +73,22 @@ def save_to_csv(result_list: List[Protein], path):
         avg_mcc = []
         avg_f1 = []
         avg_auc = []
+
+        overall_predictions = None
+        overall_actual_values = None
+
         for protein in result_list:
-            # if protein.id in not_in_pocketminer:
-            #     continue
+            if protein.id[:4] in not_in_pocketminer:
+                continue
+            if protein.id[:4] == '7ndl':
+                continue
+            
+            if overall_predictions is None:
+                overall_predictions = protein.predictions_for_auc
+                overall_actual_values = protein.actual_values
+            else:
+                overall_predictions = np.concatenate((overall_predictions, protein.predictions_for_auc), axis=0)
+                overall_actual_values = np.concatenate((overall_actual_values, protein.actual_values), axis=0)
             counter += 1
             avg_len.append(protein.sequence.embedding.shape[0])
             avg_binding_res.append(sum(protein.actual_values))
@@ -101,12 +103,16 @@ def save_to_csv(result_list: List[Protein], path):
                 writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1, protein.auc])
             else:
                 writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1])
+
+        overall = Protein('overall', 'X'*overall_predictions.shape[0], overall_predictions, overall_actual_values, overall=True)
         if hasattr(result_list[0], 'auc'):
-            writer.writerow(["average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter ])
-            writer.writerow(["standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc) ])
+            writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter ])
+            writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc) ])
+            writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc ])
         else:
-            writer.writerow(["average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter ])
-            writer.writerow(["standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1) ])
+            writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter ])
+            writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1) ])
+            writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1 ])
 
 def create_statistics():
     conf = get_json_config()
@@ -122,7 +128,7 @@ def create_statistics():
             open(f'{data_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'rb'))}
     test_set = pickle.load(open(f'{data_directory}/sequences_TEST.pickle', 'rb'))
     sets_combined = {**train_set, **test_set}
-
+    
     results = make_predictions(sets_combined)
     
     train_proteins = process_set(train_set, results)

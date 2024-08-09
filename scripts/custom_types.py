@@ -53,19 +53,20 @@ class Dataset:
         
 
 class Results:
-    def __init__(self, actual_values, predictions, stats, protein_code):
+    def __init__(self, actual_values, predictions, stats, protein_code, predictions_output_directory):
         self.actual_values = actual_values
         self.predictions = predictions
         self.stats = stats
-        with open(f'../data/predictions/{protein_code}.txt', 'w') as f:
+        with open(f'{predictions_output_directory}/{protein_code}.txt', 'w') as f:
             for actual, pred in zip(self.actual_values, self.predictions):
                 f.write(f'{actual} {pred[1]}\n')
 
 class Protein:
-    def __init__(self, id, sequence, predictions, actual_values, prank=False):
+    def __init__(self, id, sequence, predictions, actual_values, prank=False, overall=False):
         self.id: str = id
         self.sequence: Sequence = sequence        
         self.actual_values: np.ndarray = actual_values
+
         if prank:
             self.predictions = predictions
         else:
@@ -75,10 +76,12 @@ class Protein:
         if not prank:
             self.auc = self.get_auc(predictions)
             self.predictions_for_auc = predictions
+
         self.accuracy = self.get_accuracy()
         self.mcc = self.get_mcc()
         self.f1 = self.get_f1()
-        self.sanity_check()
+        if not overall:
+            self.sanity_check()
 
     def sanity_check(self):
         assert self.sequence.embedding.shape[0] == len(self.actual_values)
@@ -88,8 +91,10 @@ class Protein:
         return metrics.confusion_matrix(self.predictions, self.actual_values)
 
     def get_auc(self,pred):
-        return metrics.roc_auc_score(self.actual_values, pred[:,1])
-    
+        fpr, tpr, _ = metrics.roc_curve(self.actual_values, pred[:,1])
+        roc_auc = metrics.auc(fpr, tpr)
+        return roc_auc    
+        
     def get_accuracy(self):
         return metrics.accuracy_score(self.predictions, self.actual_values)
     
@@ -112,6 +117,7 @@ class Protein:
         TP = self.cf[1][1]
         # TN = self.cf[0][0]
         # Sensitivity, hit rate, recall, or true positive rate
+        assert FN + TP == np.sum(self.actual_values)
         return TP/(TP+FN)
     
     def get_FPR(self):
@@ -120,4 +126,5 @@ class Protein:
         # TP = self.cf[1][1]
         TN = self.cf[0][0]
         # Fall out or false positive rate
+        assert FP + TN == len(self.actual_values) - np.sum(self.actual_values)
         return FP/(FP+TN)

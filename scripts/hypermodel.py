@@ -34,7 +34,7 @@ class ApoloHyperModel(kt.HyperModel):
         f1_score = tf.keras.metrics.F1Score(name='f1_score')
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp.Choice('learning_rate', values=self.config.hypermodel.learning_rate)),
-            loss=keras.losses.CategoricalCrossentropy(from_logits=False),
+            loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
             metrics=[f1_score, tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2, name='mcc'), keras.metrics.CategoricalAccuracy()]
             )            
             

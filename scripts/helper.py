@@ -189,7 +189,8 @@ def process_dataset():
                 annotations = row[3]
                 if annotations == '':
                     continue
-
+                if id not in ds:
+                    continue
                 annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
 
                 ds[id].add_annotations(' '.join(annotations), is_noncryptic=True)
