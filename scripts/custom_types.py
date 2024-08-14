@@ -62,7 +62,7 @@ class Results:
                 f.write(f'{actual} {pred[1]}\n')
 
 class Protein:
-    def __init__(self, id, sequence, predictions, actual_values, prank=False, overall=False):
+    def __init__(self, id, sequence, predictions, actual_values, prank=False, overall=False, threshold=0.5):
         self.id: str = id
         self.sequence: Sequence = sequence        
         self.actual_values: np.ndarray = actual_values
@@ -70,7 +70,11 @@ class Protein:
         if prank:
             self.predictions = predictions
         else:
-            self.predictions: np.ndarray = tf.argmax(predictions, 1).numpy()
+            # tmp = predictions[:, 1]
+            self.predictions = np.copy(predictions[:, 1])
+            self.predictions[self.predictions > threshold] = 1
+            self.predictions[self.predictions <= threshold] = 0
+            # self.predictions: np.ndarray = tf.argmax(predictions, 1).numpy()
 
         self.cf = self.get_conf_matrix()
         if not prank:
