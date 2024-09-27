@@ -1,7 +1,6 @@
 import numpy as np
 from typing import List
 import tensorflow as tf
-import numpy as np
 from sklearn import metrics  
 
 class Sequence:
@@ -98,7 +97,12 @@ class Protein:
         fpr, tpr, _ = metrics.roc_curve(self.actual_values, pred[:,1])
         roc_auc = metrics.auc(fpr, tpr)
         return roc_auc    
-        
+
+    def get_auprc(self):
+        precision, recall, _ = metrics.precision_recall_curve(self.actual_values, self.predictions_for_auc[:,1])
+        auc_precision_recall = metrics.auc(recall, precision)
+        return auc_precision_recall
+
     def get_accuracy(self):
         return metrics.accuracy_score(self.predictions, self.actual_values)
     

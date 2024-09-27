@@ -28,7 +28,7 @@ def make_predictions(ds: Dict[str, Sequence]) -> Dict[str, Results]:
 
         y = [0]*seq_len
         for ix in sequence.annotations:
-            y[ix - 1] = 1
+            y[ix] = 1
 
         X = X.astype("float32")
         y = np.array(y).astype("float32")
@@ -58,7 +58,7 @@ def save_to_csv(result_list: List[Protein], path, threshold=0.5):
         writer = csv.writer(file)
 
         if hasattr(result_list[0], 'auc'):
-            field = ["code", "length", "binding_residues", "FPR", "TPR", "ACC", "MCC", "F1", "AUC"]
+            field = ["code", "length", "binding_residues", "FPR", "TPR", "ACC", "MCC", "F1", "AUC", "AUPRC"]
         else:
             field = ["code", "length", "binding_residues", "FPR", "TPR", "ACC", "MCC", "F1"]
     
@@ -73,15 +73,16 @@ def save_to_csv(result_list: List[Protein], path, threshold=0.5):
         avg_mcc = []
         avg_f1 = []
         avg_auc = []
+        avg_auprc = []
 
         overall_predictions = None
         overall_actual_values = None
 
         for protein in result_list:
-            # if protein.id[:4] in not_in_pocketminer:
-            #     continue
-            if protein.id not in is_in_p2rank:
+            if protein.id[:4] in not_in_pocketminer:
                 continue
+            # if protein.id not in is_in_p2rank:
+            #     continue
             if protein.id[:4] == '7ndl':
                 continue
             
@@ -99,19 +100,21 @@ def save_to_csv(result_list: List[Protein], path, threshold=0.5):
             avg_acc.append(protein.accuracy)
             avg_mcc.append(protein.mcc)
             avg_f1.append(protein.f1)
+            avg_auprc.append(protein.get_auprc())
 
             if hasattr(result_list[0], 'auc'):
                 avg_auc.append(protein.auc)
-                writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1, protein.auc])
+                writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1, protein.auc, protein.get_auprc()])
             else:
                 writer.writerow([protein.id, protein.sequence.embedding.shape[0], sum(protein.actual_values), protein.get_FPR(), protein.get_TPR(), protein.accuracy, protein.mcc, protein.f1])
 
         overall = Protein('overall', 'X'*overall_predictions.shape[0], overall_predictions, overall_actual_values, overall=True, threshold=threshold)
+        
         if hasattr(result_list[0], 'auc'):
-            writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter ])
-            writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc) ])
-            writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc ])
-            print(', '.join([str(i) for i in ["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc ]]))
+            writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter,  sum(avg_auprc) / counter])
+            writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc), statistics.stdev(avg_auprc) ])
+            writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc, overall.get_auprc()])
+            print(', '.join([str(i) for i in ["overall", overall_predictions.shape[0], sum(overall.actual_values), sum(overall.predictions), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc , overall.get_auprc() ]]))
         else:
             writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter ])
             writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1) ])
@@ -134,15 +137,23 @@ def create_statistics():
     sets_combined=test_set
     results = make_predictions(sets_combined)
 
-    print(', '.join(["code", "length", "binding_residues", "FPR", "TPR", "ACC", "MCC", "F1", "AUC"]))
-    for threshold in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    for threshold in [0.75]:
 
-        # train_proteins = process_set(train_set, results)
+        # train_proteins = process_set(train_set, results, threshold=threshold)
         test_proteins = process_set(test_set, results, threshold=threshold)
 
         os.makedirs(statistics_directory, exist_ok = True)
-        # save_to_csv(train_proteins, f'{statistics_directory}/train-{project_name}.csv')
+        # save_to_csv(train_proteins, f'{statistics_directory}/train-{project_name}.csv', threshold=threshold)
         save_to_csv(test_proteins, f'{statistics_directory}/test-{project_name}.csv', threshold=threshold)
-        # save_to_csv(train_proteins + test_proteins, f'{statistics_directory}/overall-{project_name}.csv')
+        # save_to_csv(train_proteins + test_proteins, f'{statistics_directory}/overall-{project_name}.csv', threshold=threshold)
     
 
+# for these thresholds: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+# code, length, binding_residues, FPR, TPR, ACC, MCC, F1, AUC
+# overall, 54259, 3113.0, 0.24373362530794196, 0.7735303565692259, 0.7572568606129859, 0.2762010711280888, 0.26774892978262077, 0.845478101910633
+# overall, 54259, 3113.0, 0.21430805928127322, 0.751044008994539, 0.7837040859580899, 0.2901794245356532, 0.28491347794296856, 0.845478101910633
+# overall, 54259, 3113.0, 0.1899855316153756, 0.7320912303244459, 0.8055437807552664, 0.3037952511003849, 0.3016744986431928, 0.845478101910633
+# overall, 54259, 3113.0, 0.165369725882767, 0.7025377449405718, 0.8270517333529921, 0.3145717754407618, 0.31792411687745314, 0.845478101910633
+# overall, 54259, 3113.0, 0.13887694052320806, 0.6678445229681979, 0.8500340957260547, 0.32807890604430173, 0.3381862545750305, 0.845478101910633
+# overall, 54259, 3113.0, 0.1091776483009424, 0.615804690009637, 0.8750437715402053, 0.3413471006784483, 0.36122102882984736, 0.845478101910633
+# overall, 54259, 3113.0, 0.07112970711297072, 0.534211371667202, 0.9062275382885788, 0.3627122697808775, 0.3952935583551224, 0.845478101910633 

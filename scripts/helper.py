@@ -59,9 +59,9 @@ def generate_classifier_data(ds: Dict[str, Sequence]):
         # y_aux = [0]*len(val.seq)
         y_aux = [0] * seq_len
         for ix in val.annotations:
-            if ix - 1 >= len(y_aux):
+            if ix >= len(y_aux):
                 print(id, ix)
-            y_aux[ix - 1] = 1
+            y_aux[ix] = 1
         y += y_aux
         assert val.embedding.shape[0] == len(y_aux)
         #     val.sequence), f"Embedding length doesn't match the sequence length: {val.sequence}"
