@@ -79,8 +79,8 @@ def save_to_csv(result_list: List[Protein], path, threshold=0.5):
         overall_actual_values = None
 
         for protein in result_list:
-            if protein.id[:4] in not_in_pocketminer:
-                continue
+            # if protein.id[:4] in not_in_pocketminer:
+            #     continue
             # if protein.id not in is_in_p2rank:
             #     continue
             if protein.id[:4] == '7ndl':

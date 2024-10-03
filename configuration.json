@@ -9,19 +9,19 @@
         "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed",
         "embedder": "bert"
     },
-    "embeddings_directory": "data/embeddings/cryptobench-ahojv2-cut",
-    "tuner_directory": "data/metadata/hyperparameter-tuning",
-    "model_directory": "data/metadata/results-apo-esm2",
-    "statistics_directory": "data/statistics/statistics",
-    "test_annotations_path": "data/annotations/cryptobench-translated-annotations/test.csv",
-    "test_noncryptic_annotations_path": "data/annotations/cryptobench-noncryptic-translated-annotations/test.csv",
+    "embeddings_directory": "data/embeddings/cryptobench-v2/cryptobench-ahojv2-cut",
+    "tuner_directory": "data/metadata/cryptobench-v2/hyperparameter-tuning",
+    "model_directory": "data/metadata/cryptobench-v2/results-apo-esm2",
+    "statistics_directory": "data/statistics/cryptobench-v2/statistics",
+    "test_annotations_path": "data/annotations/cryptobench-v2/cryptobench-translated-annotations/test.csv",
+    "test_noncryptic_annotations_path": "data/annotations/cryptobench-v2/cryptobench-noncryptic-translated-annotations/test.csv",
     "train_annotations_path": [
-        "data/annotations/cryptobench-translated-annotations/train-fold-0.csv",
-        "data/annotations/cryptobench-translated-annotations/train-fold-1.csv",
-        "data/annotations/cryptobench-translated-annotations/train-fold-2.csv",
-        "data/annotations/cryptobench-translated-annotations/train-fold-3.csv"
+        "data/annotations/cryptobench-v2/cryptobench-translated-annotations/train-fold-0.csv",
+        "data/annotations/cryptobench-v2/cryptobench-translated-annotations/train-fold-1.csv",
+        "data/annotations/cryptobench-v2/cryptobench-translated-annotations/train-fold-2.csv",
+        "data/annotations/cryptobench-v2/cryptobench-translated-annotations/train-fold-3.csv"
     ],
-    "predictions_output_directory": "data/statistics/predictions",
+    "predictions_output_directory": "data/statistics/cryptobench-v2/statistics-final-threshold-0.75/predictions",
     "hypermodel": {
         "neuron_size_min": 128,
         "neuron_size_max": 512,
