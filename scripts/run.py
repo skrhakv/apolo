@@ -5,5 +5,5 @@ from stats import create_statistics
 
 if __name__ == "__main__":
     process_dataset()
-    # create_hypermodel()
+    create_hypermodel()
     create_statistics()

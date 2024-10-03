@@ -12,11 +12,9 @@ class Sequence:
         self.noncryptic_annotations: List[int] = []
 
     def add_annotations(self, annotations, is_noncryptic=False):
-        # annotations: D126 Q129 K130 G133 P157 V158 P159 K162 V294 L295
-
         for annotation in annotations.split(' '):
             # aminoacid = annotation[:1]
-            label_seq_id = int(annotation[1:])
+            label_seq_id = int(annotation)
 
             # assert aminoacid == self.sequence[label_seq_id - 1], f'ID {self.id}: The annotation {annotation} letter does not match the sequence at the specified position! Annotation = {aminoacid}, Sequence[{label_seq_id}] = {self.sequence[label_seq_id - 1]}'
             if not is_noncryptic:

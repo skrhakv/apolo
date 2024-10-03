@@ -146,8 +146,10 @@ def process_dataset():
     embedding_directory = get_config_filepath(conf.embeddings_directory)
     train_annotations_paths = [get_config_filepath(
         i) for i in conf.train_annotations_path]
+    features_paths = [get_config_filepath(
+        i) for i in conf.features_paths]
+
     test_annotations_path = get_config_filepath(conf.test_annotations_path)
-    test_noncryptic_annotations_path = get_config_filepath(conf.test_noncryptic_annotations_path)
     sequences_pickle_directory = get_config_filepath(conf.data_directory)
     fasta_file_location = get_config_filepath(
         conf.remote_embedding_computation.fasta_file_location)
@@ -173,28 +175,16 @@ def process_dataset():
                 sequence = row[4]
                 embedding = np.load(f'{embedding_directory}/{id}.npy')
 
+                for feature_path in features_paths:
+                    feature = np.load(f'{feature_path}/{id}.npy')
+                    embedding = np.append(embedding.transpose(), [feature], axis=0).transpose()
+                
                 ds[id] = Sequence(id, sequence, embedding)
 
                 # check data consistency
                 # assert ds[id].sequence == sequence
                 ds[id].add_annotations(' '.join(annotations))
     
-    with open(test_noncryptic_annotations_path, 'r') as csvfile:
-        print(f'Processing {test_noncryptic_annotations_path} ... ')
-
-        reader = csv.reader(csvfile, delimiter=';')
-        for row in reader:
-            for chain_id in row[1].split('-'):
-                id = row[0].lower() + chain_id
-                annotations = row[3]
-                if annotations == '':
-                    continue
-                if id not in ds:
-                    continue
-                annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
-
-                ds[id].add_annotations(' '.join(annotations), is_noncryptic=True)
-
     with open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'wb') as f:
         pickle.dump(ds, f)
 
@@ -216,6 +206,10 @@ def process_dataset():
                     
                     sequence = row[4]
                     embedding = np.load(f'{embedding_directory}/{id}.npy')
+
+                    for feature_path in features_paths:
+                        feature = np.load(f'{feature_path}/{id}.npy')
+                        embedding = np.append(embedding.transpose(), [feature], axis=0).transpose()
 
                     ds[id] = Sequence(id, sequence, embedding)
                     # check data consistency
