@@ -2,7 +2,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 import keras
 
-best_hp_model: tf.keras.Model = keras.models.load_model('/home/skrhakv/apolo/data/metadata/results-apo-esm2/models/cryptic-site-pred/best_trained')
+best_hp_model: tf.keras.Model = keras.models.load_model('/home/skrhakv/apolo/data/metadata/bibm2024/model-protbert-rigid-dataset-3rd-layer-sasa/models/cryptic-site-pred/best_trained')
 
 print(len(best_hp_model.layers))
 print(best_hp_model.summary())

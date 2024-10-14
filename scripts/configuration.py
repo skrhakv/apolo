@@ -30,9 +30,11 @@ class Configuration(object):
         return result
 
     @staticmethod
-    def load_json():
+    def load_json(filename=None):
+        if filename == None:
+            filename = 'configurations/configuration.json'
         path_dir = os.path.realpath(os.path.dirname(__file__))
-        path = f'{path_dir}/../configuration.json'
+        path = f'{path_dir}/../{filename}'
         
         with open(path, "r") as f:
             result = Configuration.__load__(json.loads(f.read()))

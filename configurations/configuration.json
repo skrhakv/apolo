@@ -1,0 +1,49 @@
+{
+    "project_name": "cryptic-site-pred",
+    "data_directory": "data",
+    "remote_embedding_computation": {
+        "__comment__are_embeddings_precomputed__": "true if precomputed embeddings are already provided in the 'embeddings_directory'",
+        "are_embeddings_precomputed": true,
+        "server_url": "http://127.0.0.1:5050",
+        "fasta_file_location": "data/fasta_file/sequences.fasta",
+        "__comment__embedder__": "only values 'xlnet', 'bert', 'albert', 'onehot', 't5', 'esm' are allowed",
+        "embedder": "bert"
+    },
+    "embeddings_directory": "data/embeddings/bibm2024/protbert-cryptobench",
+    "tuner_directory": "data/metadata/bibm2024/hyperparameter-tuning",
+    "model_directory": "data/metadata/bibm2024/model-protbert-cryptobench-basic",
+    "statistics_directory": "data/statistics/bibm2024/protbert/cryptobench-basic/statistics",
+    "test_annotations_path": "data/annotations/bibm2024/annotation-cryptobench/test.csv",
+    "train_annotations_path": [
+        "data/annotations/bibm2024/annotation-cryptobench/train-0.csv",
+        "data/annotations/bibm2024/annotation-cryptobench/train-1.csv",
+        "data/annotations/bibm2024/annotation-cryptobench/train-2.csv",
+        "data/annotations/bibm2024/annotation-cryptobench/train-3.csv"
+    ],
+    "features_paths": [
+    ],
+    "predictions_output_directory": "data/statistics/bibm2024/protbert/cryptobench-basic/predictions",
+    "hypermodel": {
+        "neuron_size_min": 128,
+        "neuron_size_max": 512,
+        "neuron_size_step": 128,
+        "number_of_layers_min": 1,
+        "number_of_layers_max": 3,
+        "number_of_layers_step": 1,
+        "dropout_min": 0.3,
+        "dropout_max": 0.7,
+        "dropout_step": 0.2,
+        "learning_rate": [
+            1e-4, 1e-3
+        ],
+        "batch_size": [
+             2048
+        ]
+    },
+    "early_stopping": {
+        "patience": 2,
+        "min_delta": 0.1,
+        "max_epochs": 50
+    },
+    "append_features_later": false
+}

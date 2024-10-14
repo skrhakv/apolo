@@ -30,11 +30,12 @@ def get_config_filepath(config_filepath: str) -> str:
     return f'{path}/../{config_filepath}'
 
 
-def get_json_config():
-    return Configuration.load_json()
+def get_json_config(filename=None):
+    return Configuration.load_json(filename)
 
 
 def generate_classifier_data(ds: Dict[str, Sequence]):
+    print('generate classifier data ...')
     embedding_dim = None
     i = 0
     while not embedding_dim:
@@ -69,8 +70,8 @@ def generate_classifier_data(ds: Dict[str, Sequence]):
     return X, y
 
 
-def generate_test_train_data(validation_folds=False) -> Dataset:
-    conf = get_json_config()
+def generate_test_train_data(validation_folds=False, config_filename=None) -> Dataset:
+    conf = get_json_config(config_filename)
     sequences_pickle_directory = get_config_filepath(conf.data_directory)
     train_annotations_paths = [get_config_filepath(
         i) for i in conf.train_annotations_path]
@@ -81,11 +82,11 @@ def generate_test_train_data(validation_folds=False) -> Dataset:
         for i in range(len(train_annotations_paths)):
             print(f'\t process fold {i}')
             train_set = {**train_set, **pickle.load(
-                open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'rb'))}
+                open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}_{config_filename}.pickle', 'rb'))}
         print('load test set ...')
 
         test_set = pickle.load(
-            open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'rb'))
+            open(f'{sequences_pickle_directory}/sequences_TEST_{config_filename}.pickle', 'rb'))
         
         ttd = Dataset()
         print('processing train set ...')
@@ -100,7 +101,7 @@ def generate_test_train_data(validation_folds=False) -> Dataset:
         for i in range(len(train_annotations_paths)):
             print(f'\t load fold {i} ...')
             train_set = pickle.load(
-                open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'rb'))
+                open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}_{config_filename}.pickle', 'rb'))
             tmp_ttd = Dataset()
             tmp_ttd.X_train, tmp_ttd.y_train = generate_classifier_data(train_set)
             tmp_ttd.groups = [i] * len(tmp_ttd.y_train) 
@@ -140,8 +141,8 @@ def compute_embeddings_remotely(fasta_file_location, embedding_directory, server
     z.extractall(embedding_directory)
 
 
-def process_dataset():
-    conf = get_json_config()
+def process_dataset(config_filename=None):
+    conf = get_json_config(config_filename)
 
     embedding_directory = get_config_filepath(conf.embeddings_directory)
     train_annotations_paths = [get_config_filepath(
@@ -177,6 +178,7 @@ def process_dataset():
 
                 for feature_path in features_paths:
                     feature = np.load(f'{feature_path}/{id}.npy')
+                    feature = feature / np.max(feature)
                     embedding = np.append(embedding.transpose(), [feature], axis=0).transpose()
                 
                 ds[id] = Sequence(id, sequence, embedding)
@@ -185,7 +187,7 @@ def process_dataset():
                 # assert ds[id].sequence == sequence
                 ds[id].add_annotations(' '.join(annotations))
     
-    with open(f'{sequences_pickle_directory}/sequences_TEST.pickle', 'wb') as f:
+    with open(f'{sequences_pickle_directory}/sequences_TEST_{config_filename}.pickle', 'wb') as f:
         pickle.dump(ds, f)
 
     # process each train fold subset
@@ -208,7 +210,8 @@ def process_dataset():
                     embedding = np.load(f'{embedding_directory}/{id}.npy')
 
                     for feature_path in features_paths:
-                        feature = np.load(f'{feature_path}/{id}.npy')
+                        feature = np.load(f'{feature_path}/{id}.npy') 
+                        feature = feature / np.max(feature)
                         embedding = np.append(embedding.transpose(), [feature], axis=0).transpose()
 
                     ds[id] = Sequence(id, sequence, embedding)
@@ -216,5 +219,5 @@ def process_dataset():
                     # assert ds[id].sequence == sequence
                     ds[id].add_annotations(' '.join(annotations))
 
-        with open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}.pickle', 'wb') as f:
+        with open(f'{sequences_pickle_directory}/sequences_TRAIN_FOLD_{i}_{config_filename}.pickle', 'wb') as f:
             pickle.dump(ds, f)
