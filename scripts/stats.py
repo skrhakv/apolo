@@ -114,6 +114,7 @@ def save_to_csv(result_list: List[Protein], path, threshold=0.5):
             writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter, sum(avg_auc) / counter,  sum(avg_auprc) / counter])
             writer.writerow(["protein standard deviation", statistics.stdev(avg_len), statistics.stdev(avg_binding_res), statistics.stdev(avg_fpr),statistics.stdev(avg_tpr),statistics.stdev(avg_acc),statistics.stdev(avg_mcc),statistics.stdev(avg_f1),statistics.stdev(avg_auc), statistics.stdev(avg_auprc) ])
             writer.writerow(["overall", overall_predictions.shape[0], sum(overall.actual_values), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc, overall.get_auprc()])
+            print(', '.join([str(i) for i in ["code", "length", "binding_residues", "FPR", "TPR", "ACC", "MCC", "F1", "AUC", "AUPRC"]]))
             print(', '.join([str(i) for i in ["overall", overall_predictions.shape[0], sum(overall.actual_values), sum(overall.predictions), overall.get_FPR(), overall.get_TPR(),overall.accuracy, overall.mcc, overall.f1, overall.auc , overall.get_auprc() ]]))
         else:
             writer.writerow(["protein average", sum(avg_len) / counter, sum(avg_binding_res) / counter, sum(avg_fpr) / counter, sum(avg_tpr) / counter, sum(avg_acc) / counter, sum(avg_mcc) / counter, sum(avg_f1) / counter ])
@@ -137,7 +138,7 @@ def create_statistics():
     sets_combined=test_set
     results = make_predictions(sets_combined)
 
-    for threshold in [0.75]:
+    for threshold in [0.95]:
 
         # train_proteins = process_set(train_set, results, threshold=threshold)
         test_proteins = process_set(test_set, results, threshold=threshold)

@@ -37,10 +37,13 @@
         ],
         "batch_size": [
              2048
-        ]
+        ],
+        "epochs": 7
     },
     "early_stopping": {
-        "patience": 2,
+        "finetune_epochs": false,
+        "finetune_decision_threshold": true,
+        "patience": 5,
         "min_delta": 0.1,
         "max_epochs": 50
     }

@@ -31,7 +31,7 @@ class ApoloHyperModel(kt.HyperModel):
         model = keras.Model(inputs=inputs, outputs=output_layer)
         # auc = tf.keras.metrics.AUC()
         # sensitivity_at_specificity = tf.keras.metrics.SensitivityAtSpecificity(specificity=0.9, name='my_sensitivity_at_specificity')
-        f1_score = tf.keras.metrics.F1Score(name='f1_score')
+        f1_score = tf.keras.metrics.F1Score(name='f1_score', average='weighted')
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp.Choice('learning_rate', values=self.config.hypermodel.learning_rate)),
             loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),

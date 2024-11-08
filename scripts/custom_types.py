@@ -77,7 +77,12 @@ class Protein:
 
         self.cf = self.get_conf_matrix()
         if not prank:
-            self.auc = self.get_auc(predictions)
+            fpr, tpr, _ = metrics.roc_curve(self.actual_values, predictions[:,1])
+            self.auc = metrics.auc(fpr, tpr)
+            
+            precision, recall, _ = metrics.precision_recall_curve(self.actual_values, predictions[:,1])
+            self.auprc = metrics.auc(recall, precision)
+ 
             self.predictions_for_auc = predictions
 
         self.accuracy = self.get_accuracy()
@@ -94,14 +99,10 @@ class Protein:
         return metrics.confusion_matrix(self.predictions, self.actual_values)
 
     def get_auc(self,pred):
-        fpr, tpr, _ = metrics.roc_curve(self.actual_values, pred[:,1])
-        roc_auc = metrics.auc(fpr, tpr)
-        return roc_auc    
+        return self.auc
 
     def get_auprc(self):
-        precision, recall, _ = metrics.precision_recall_curve(self.actual_values, self.predictions_for_auc[:,1])
-        auc_precision_recall = metrics.auc(recall, precision)
-        return auc_precision_recall
+        return self.auprc
 
     def get_accuracy(self):
         return metrics.accuracy_score(self.predictions, self.actual_values)
@@ -110,7 +111,7 @@ class Protein:
         return metrics.matthews_corrcoef(self.predictions, self.actual_values)
     
     def get_f1(self):
-        return metrics.f1_score(self.predictions, self.actual_values)
+        return metrics.f1_score(self.predictions, self.actual_values, average='weighted')
     
     def print(self):
         for i, aminoacid in enumerate(self.sequence.sequence):
