@@ -26,7 +26,8 @@ def evaluate_predictions(predictions, ys) -> Dict[str, Union[np.ndarray, float]]
 
 
 def get_config_filepath(config_filepath: str) -> str:
-    path = os.path.realpath(os.path.dirname(__file__))
+    # path = os.path.realpath(os.path.dirname(__file__))
+    return config_filepath
     return f'{path}/../{config_filepath}'
 
 
@@ -169,12 +170,13 @@ def process_dataset():
                 if annotations == '':
                     continue
 
-                annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                # annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                annotations = [i[1:] for i in annotations.split(' ')]
                 sequence = row[4]
                 embedding = np.load(f'{embedding_directory}/{id}.npy')
 
                 ds[id] = Sequence(id, sequence, embedding)
-
+                
                 # check data consistency
                 # assert ds[id].sequence == sequence
                 ds[id].add_annotations(' '.join(annotations))
@@ -191,7 +193,8 @@ def process_dataset():
                     continue
                 if id not in ds:
                     continue
-                annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                # annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                annotations = [i[1:] for i in annotations.split(' ')]
 
                 ds[id].add_annotations(' '.join(annotations), is_noncryptic=True)
 
@@ -209,8 +212,9 @@ def process_dataset():
                     id = row[0].lower() + chain_id
                     annotations = row[3]
 
-                    annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
-                    
+                    # annotations = [i.split('_')[1] for i in annotations.split(' ') if i.split('_')[0] == chain_id]
+                    annotations = [i[1:] for i in annotations.split(' ')]
+
                     if len(annotations) < 1:
                         continue
                     
